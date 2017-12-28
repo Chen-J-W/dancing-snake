@@ -1,0 +1,175 @@
+#include "U8glib.h"
+U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE);
+#define setFont_S u8g.setFont(u8g_font_fixed_v0r)
+int x[12]={12,11,10,9,8,7,6,5,4,3,2,1};
+int y[12]={10,10,10,10,10,10,10,10,10,10,10,10};//蛇身
+int x1[12]={12,11,10,9,8,7,6,5,4,3,2,1};
+int y1[12]={54,54,54,54,54,54,54,54,54,54,54,54};//蛇身
+int dir[4][2]={{1,0},{-1,0},{0,-1},{0,1}};控制方向
+ int a,a1;
+int p[2]={0};
+void setup()
+{
+  Serial.begin(115200);
+  }
+  void hua()
+  {
+   u8g.firstPage();
+    do{
+      setFont_S;
+      u8g.drawFrame(0,0,90,64);
+      u8g.setPrintPos(91,10);
+      u8g.print("alive:");
+      if(p[0]==0)
+{for(int i=0;i<=11;i++)
+{if(x[i]<=0)
+x[i]+=45;
+  if(y[i]<=0)
+y[i]+=32;
+  x[i]=x[i]%45;
+y[i]=y[i]%32;
+  u8g.drawBox(x[i]*2,y[i]*2,2,2);}
+ u8g.drawPixel(x[4]*2,y[4]*2+2);
+u8g.drawPixel(x[4]*2,y[4]*2-1);
+u8g.drawPixel(x[4]*2-1,y[4]*2);
+u8g.drawPixel(x[4]*2+2,y[4]*2);
+u8g.setPrintPos(91,25);
+      u8g.print("snake1");
+}
+if(p[1]==0)
+{for(int i=0;i<=11;i++)
+{if(x1[i]<=0)
+x1[i]+=45;
+  if(y1[i]<=0)
+y1[i]+=32;
+  x1[i]=x1[i]%45;
+y1[i]=y1[i]%32;
+  u8g.drawBox(x1[i]*2,y1[i]*2,2,2);}
+ u8g.drawPixel(x1[4]*2,y1[4]*2+2);
+u8g.drawPixel(x1[4]*2,y1[4]*2-1);
+u8g.drawPixel(x1[4]*2-1,y1[4]*2);
+u8g.drawPixel(x1[4]*2+2,y1[4]*2);
+u8g.setPrintPos(91,35);
+      u8g.print("snake2");}
+      if(p[0]+p[1]>=1)
+          { u8g.setPrintPos(91,45);
+      u8g.print("win");}
+
+    }while(u8g.nextPage()); 
+    }//界面展示
+   int read_joy()
+{
+    int x;
+    x=analogRead(A0);
+    if (x>650&&x<750) 
+         { return 0;
+         Serial.println(1);}
+    if (x<400&&x>300) 
+       { return 1;
+         Serial.println(2);}
+    if (x>450&&x<550) 
+        {return 2;
+         Serial.println(3);}
+    if (x>800&&x<900) 
+        {return 3;
+         Serial.println(4);}
+    if(x==0)
+     return 5;
+    else {return 4;
+        Serial.println(0);}
+        
+}//接收摇杆信号
+ int read_joy1()
+{
+    int x;
+    x=analogRead(A2);
+    if (x>650&&x<750) 
+         { return 0;
+         Serial.println(1);}
+    if (x<400&&x>300) 
+       { return 1;
+         Serial.println(2);}
+    if (x>450&&x<550) 
+        {return 2;
+         Serial.println(3);}
+    if (x>800&&x<900) 
+        {return 3;
+         Serial.println(4);}
+          if(x==0)
+     return 5;
+        else {return 4;
+        Serial.println(0);}
+        
+}//接收摇杆信号
+   void go_ahead()
+    {
+     
+   if(read_joy()!=4&&read_joy()!=5)
+    a=read_joy();
+    int e=read_joy();
+    for(int i=11;i>=1;i--)
+    {
+      x[i]=x[i-1];
+      y[i]=y[i-1];
+      }
+      if(e!=5)
+      {x[0]+=dir[a][0];
+      y[0]+=dir[a][1];}
+      else
+      {x[0]+=2*dir[a][0];
+      y[0]+=2*dir[a][1];}
+     }//蛇身移动
+      void go_ahead1()
+    {
+   if(read_joy1()!=4&&read_joy1()!=5)
+    a1=read_joy1();
+    int e1=read_joy1();
+    for(int i=11;i>=1;i--)
+    {
+      x1[i]=x1[i-1];
+      y1[i]=y1[i-1];
+      }
+      if(e1!=5)
+      {x1[0]+=dir[a1][0];
+      y1[0]+=dir[a1][1];}
+      else
+      {x1[0]+=2*dir[a1][0];
+      y1[0]+=2*dir[a1][1];}
+     }//蛇身移动
+     void s1_eat_s2()
+     {
+      if(x[0]==x1[4]&&y[0]==y1[4])
+      p[1]=1;
+      }//蛇1咬到蛇2的七寸
+       void s2_eat_s1()
+     {
+      if(x1[0]==x[4]&&y1[0]==y[4])
+      p[0]=1;
+      }//蛇2咬到蛇1的七寸
+      void restartGame()
+      {  int e=read_joy();
+      int e1=read_joy1();
+        if(p[0]+p[1]>=1&&e==5&&e1==5)
+        { for(int i=0;i<=11;i++)
+           {
+             x[i]=12-i;
+             x1[i]=12-i;
+             y[i]=10;
+             y1[i]=54;
+            }
+            a=0;
+            a1=0;
+ p[0]=0;
+ p[1]=0;}
+        }//重置游戏
+void loop(void)//主循环函数
+{
+   hua();
+ read_joy();
+    go_ahead();
+     read_joy1();
+    go_ahead1();
+   s2_eat_s1();
+   s1_eat_s2();
+restartGame();
+  }
